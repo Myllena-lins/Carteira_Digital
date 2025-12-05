@@ -1,0 +1,37 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: wallet_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wallet_homolog
+      MYSQL_USER: wallet_api_homolog
+      MYSQL_PASSWORD: api123
+    ports:
+      - "3307:3306"
+    volumes:
+      - carteira_digital_mysql_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d
+
+  adminer:
+    image: adminer
+    container_name: wallet_adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+
+  api:
+    build: .
+    container_name: wallet_api
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app/api
+      - ./sql:/app/sql
+    depends_on:
+      - mysql
+
+volumes:
+  carteira_digital_mysql_data:
